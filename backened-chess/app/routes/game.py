@@ -2,15 +2,17 @@ from flask import Blueprint, request, jsonify
 from app.db import db
 from app.models import Game
 from app.chess_app.pieces import GameManager
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 game_bp = Blueprint("game", __name__)
 
 @game_bp.route("/create", methods=["POST"])
+@jwt_required()
 def create_game():
 
-    user_id = request.json.get("user_id")  
+    current_user_id = get_jwt_identity() 
 
-    existing_game = Game.query.filter_by(user_id=user_id, game_status="active").first()
+    existing_game = Game.query.filter_by(user_id=current_user_id, game_status="active").first()
 
     if existing_game:
         return jsonify({
@@ -26,7 +28,7 @@ def create_game():
 
     new_game = Game(
 
-        user_id=user_id,
+        user_id=current_user_id,
         game_status="active",
         winner="",
         game_state=initial_state
@@ -44,11 +46,13 @@ def create_game():
     }), 201
 
 @game_bp.route("/game/<int:id>", methods=["GET"])
+@jwt_required()
 def get_game(id):
-    
+    current_user_id = get_jwt_identity()
     game = Game.query.get(id)
-    if not game:
-        return jsonify({"error": "Game not found"}), 404
+
+    if not game or game.user_id != current_user_id:
+        return jsonify({"error": "Unauthorized or game not found"}), 400
     
     return jsonify({
         "game_id": game.id,

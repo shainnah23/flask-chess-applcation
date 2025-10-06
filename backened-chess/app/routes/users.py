@@ -10,18 +10,17 @@ from datetime import timedelta
 bcrypt = Bcrypt()
 
 
-#create student bluprint
 users_bp=Blueprint("users",__name__)
 
 @users_bp.route("/add",methods=["POST"])
 def add_users():
   data=request.get_json()
 
-  name=data.get("name")
+  username=data.get("name")
   email=data.get("email")
   password=data.get("password")
 
-  if not name:
+  if not username:
     return jsonify({"error":"Name is required"}),400
     
   if not email:
@@ -37,17 +36,25 @@ def add_users():
 
   exists=Users.query.filter_by(email=email).first()
 
+  if exists:
+    return jsonify({"error": "Email in use"}), 400
+
   hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
   
-  new_users = Users(name=name, email=email, password=hashed_password)
+  new_users = Users(username=username, email=email, password=hashed_password)
   db.session.add(new_users)
   db.session.commit()
 
+  access_token = create_access_token(
+    identity={"id": new_users.id, "name": new_users.username},
+    expires_delta=timedelta(hours=1) 
+  )
   return jsonify({
     "message":"Member added successfully",
+    "token": access_token,
     "member":{
       "id":new_users.id,
-      "name":new_users.name,
+      "name":new_users.username,
       "email":new_users.email,
       "created_at":new_users.created_at
     }
@@ -76,7 +83,7 @@ def login_users():
 
   access_token=create_access_token(
       identity={"id":f"{users.id}","name":users.name},
-      expires_delta=timedelta(minutes=50)
+      expires_delta=timedelta(hours=1)
     )
 
   return jsonify({ "token":access_token })
