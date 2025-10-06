@@ -76,7 +76,7 @@ def login_users():
 
   access_token=create_access_token(
       identity={"id":f"{users.id}","name":users.name},
-      expires_delta=timedelta(seconds=30)
+      expires_delta=timedelta(minutes=50)
     )
 
   return jsonify({ "token":access_token })
