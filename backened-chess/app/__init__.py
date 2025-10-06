@@ -25,7 +25,8 @@ def create_app():
     jwt.init_app(app)
    # Register blueprints
     app.register_blueprint(game_bp, url_prefix="/game")
-    app.register_blueprint(moves_bp, url_prefix="/move") 
+    app.register_blueprint(moves_bp, url_prefix="/move")
+    app.register_blueprint(users_bp, url_prefix="/user")     
    
     
     return app
