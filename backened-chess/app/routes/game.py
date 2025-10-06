@@ -10,7 +10,8 @@ game_bp = Blueprint("game", __name__)
 @jwt_required()
 def create_game():
 
-    current_user_id = get_jwt_identity() 
+    current_user_id = int(get_jwt_identity())
+
 
     existing_game = Game.query.filter_by(user_id=current_user_id, game_status="active").first()
 

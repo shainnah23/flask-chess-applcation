@@ -16,7 +16,7 @@ users_bp=Blueprint("users",__name__)
 def add_users():
   data=request.get_json()
 
-  username=data.get("name")
+  username=data.get("username")
   email=data.get("email")
   password=data.get("password")
 
@@ -46,44 +46,54 @@ def add_users():
   db.session.commit()
 
   access_token = create_access_token(
-    identity={"id": new_users.id, "name": new_users.username},
-    expires_delta=timedelta(hours=1) 
+      identity=str(new_users.id), 
+      additional_claims={"username": new_users.username},
+      expires_delta=timedelta(hours=1) 
   )
+    
   return jsonify({
-    "message":"Member added successfully",
-    "token": access_token,
-    "member":{
-      "id":new_users.id,
-      "name":new_users.username,
-      "email":new_users.email,
-      "created_at":new_users.created_at
-    }
+      "message": "Member added successfully",
+      "token": access_token,
+      "user": {
+          "id": new_users.id,
+          "username": new_users.username,
+          "email": new_users.email,
+          "created_at": new_users.created_at
+      }
   })
 
-@users_bp.route("/login",methods=["POST"])
+@users_bp.route("/login", methods=["POST"])
 def login_users():
-  data=request.get_json()
+    data = request.get_json()
 
-  email=data.get("email")
-  password=data.get("password")
+    email = data.get("email")
+    password = data.get("password")
 
-  if not email or not password:
-    return jsonify({"message":"Email and password are required"}),400
-  
-  users=Users.query.filter_by(email=email).first()
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+    
+    users = Users.query.filter_by(email=email).first()
 
-  if not users:
-    return jsonify({"message":"user not found"}),401
-  
-  check_password = bcrypt.check_password_hash(users.password, password)
+    if not users:
+        return jsonify({"error": "User not found"}), 401
+    
+    check_password = bcrypt.check_password_hash(users.password, password)
 
-  if not check_password:
-    return jsonify({"message":"Invalid email or password"}),401
-  
+    if not check_password:
+        return jsonify({"error": "Invalid email or password"}), 401
+    
 
-  access_token=create_access_token(
-      identity={"id":f"{users.id}","name":users.name},
-      expires_delta=timedelta(hours=1)
+    access_token = create_access_token(
+        identity=str(users.id), 
+        additional_claims={"username": users.username},  
+        expires_delta=timedelta(hours=1)
     )
 
-  return jsonify({ "token":access_token })
+    return jsonify({
+        "token": access_token,
+        "user": {
+            "id": users.id,
+            "username": users.username,
+            "email": users.email
+        }
+    }), 200

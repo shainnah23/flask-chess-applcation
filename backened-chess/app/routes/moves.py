@@ -10,8 +10,9 @@ moves_bp = Blueprint("moves", __name__)
 @moves_bp.route("/<int:game_id>", methods=["POST"])
 @jwt_required()
 def make_move(game_id):
-
-    current_user_id = get_jwt_identity()
+    
+    current_user_id = int(get_jwt_identity()) 
+    
     data = request.get_json()
     player = data.get("player")
     from_x = data.get("from_x") - 1
@@ -22,7 +23,7 @@ def make_move(game_id):
     print(f"Player move: {player} from ({from_x},{from_y}) to ({to_x},{to_y})")
 
     game = Game.query.get(game_id)
-    if not game or game.user_id != current_user_id:
+    if not game or game.user_id != current_user_id: 
         return jsonify({"error": "Unauthorized or game not found"}), 400
 
     game_manager = GameManager(game_id, player_color="white")
