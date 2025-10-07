@@ -262,18 +262,23 @@ Moves
 - Moves forward one square (two on first move)
 - Captures diagonally
 - Direction depends on color (white moves up, blue moves down)
+
 #### Rook
 - Moves horizontally or vertically any number of squares
 - Cannot jump over pieces
+
 ### Knight
 - Moves in L-shape (2 squares in one direction, 1 in perpendicular)
 - Can jump over other pieces
+
 ### Bishop
 - Moves diagonally any number of squares
 - Cannot jump over pieces
+
 #### Queen
 - Combines rook and bishop movement
 - Most powerful piece
+
 #### King
 - Moves one square in any direction (horizontal, vertical)
 - Note: Diagonal moves are currently limited in the implementation
